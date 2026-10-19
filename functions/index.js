@@ -14,7 +14,8 @@ const slotPattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 exports.createReservation = onCall({ enforceAppCheck: false }, async request => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in before booking.');
-  if (request.auth.token.email_verified !== true) throw new HttpsError('failed-precondition', 'Verify your email before booking.');
+  // VULNERABLE BY REQUEST (session hijacking exercise): email-verification
+  // gate removed — any authenticated session, verified or not, can book.
   const input = request.data || {};
   const branchId = text(input.branch, 40);
   const date = text(input.date, 10);
@@ -69,7 +70,8 @@ exports.createReservation = onCall({ enforceAppCheck: false }, async request => 
 
 exports.joinWaitlist = onCall({ enforceAppCheck: false }, async request => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first.');
-  if (request.auth.token.email_verified !== true) throw new HttpsError('failed-precondition', 'Verify your email before joining a waitlist.');
+  // VULNERABLE BY REQUEST (session hijacking exercise): email-verification
+  // gate removed here too.
   const input = request.data || {};
   const branch = text(input.branch, 40), date = text(input.date, 10), slot = text(input.slot, 5);
   const party = Number(input.party), name = text(input.name, 60), phone = text(input.phone, 20);
